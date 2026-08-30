@@ -1,6 +1,6 @@
 /* ==========================================================================
    CAA-Lab - Estilos Principais (Modo Criança e Profissional)
-   Acessibilidade, Toque, Alto Contraste e Offline-First
+   Acessibilidade, Toque, Drag-and-Drop e Alto Contraste
    ========================================================================== */
 
 :root {
@@ -26,7 +26,7 @@
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --font-base: 18px;
   --card-size: 130px;
-  --card-font-size: 1.1rem;
+  --card-font-size: 1.05rem;
   --border-radius-lg: 16px;
   --border-radius-md: 12px;
   --border-radius-sm: 8px;
@@ -71,12 +71,12 @@ body.high-contrast .symbol-label {
 /* Tamanhos de Símbolos Configuráveis */
 body.symbol-small {
   --card-size: 105px;
-  --card-font-size: 0.95rem;
+  --card-font-size: 0.9rem;
 }
 
 body.symbol-large {
   --card-size: 160px;
-  --card-font-size: 1.3rem;
+  --card-font-size: 1.25rem;
 }
 
 /* Reset e Base */
@@ -151,7 +151,27 @@ body {
 .header-badges {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.profile-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 2px solid #bfdbfe;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.profile-selector-wrap select {
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--primary);
+  outline: none;
+  cursor: pointer;
 }
 
 .badge-item {
@@ -178,6 +198,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 
@@ -195,7 +216,7 @@ body {
 
 /* Barra Lateral de Categorias */
 .sidebar-categories {
-  width: 220px;
+  width: 230px;
   background-color: var(--bg-sidebar);
   color: var(--text-on-dark);
   display: flex;
@@ -219,9 +240,10 @@ body {
 .category-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   overflow-y: auto;
   flex: 1;
+  max-height: calc(100vh - 270px);
 }
 
 .category-btn {
@@ -238,7 +260,7 @@ body {
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
-  min-height: 44px;
+  min-height: 42px;
 }
 
 .category-btn:hover {
@@ -252,7 +274,7 @@ body {
   box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
 }
 
-.category-btn svg, .category-btn .icon {
+.category-btn .icon {
   font-size: 1.2rem;
   width: 24px;
   text-align: center;
@@ -328,11 +350,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .active-category-title {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--text-primary);
   display: flex;
@@ -379,7 +401,7 @@ body {
 .symbols-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--card-size), 1fr));
-  gap: 14px;
+  gap: 12px;
   overflow-y: auto;
   padding: 4px;
   align-content: start;
@@ -411,6 +433,17 @@ body {
   transform: scale(0.95);
 }
 
+.symbol-card.selected-for-drag {
+  border: 3px solid var(--primary) !important;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+  transform: scale(1.02);
+}
+
+.symbol-card.dragging {
+  opacity: 0.5;
+  border: 2px dashed var(--primary);
+}
+
 .symbol-img-wrap {
   width: 65%;
   height: 65%;
@@ -440,7 +473,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 12px 0 4px;
+  padding: 10px 0 2px;
 }
 
 .page-arrow-btn {
@@ -485,13 +518,13 @@ body {
 
 /* Painel Lateral Direito (Minha Mensagem & Frases Rápidas) */
 .right-panel {
-  width: 320px;
+  width: 330px;
   background-color: #f8fafc;
   border-left: 2px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px;
   overflow-y: auto;
 }
 
@@ -503,11 +536,11 @@ body {
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .panel-card-title {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-secondary);
@@ -522,7 +555,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 80px;
+  min-height: 75px;
   padding: 8px;
   background-color: var(--bg-app);
   border-radius: var(--border-radius-md);
@@ -538,8 +571,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 65px;
+  width: 58px;
+  height: 64px;
   flex-shrink: 0;
   position: relative;
   cursor: pointer;
@@ -568,7 +601,7 @@ body {
 }
 
 .message-symbol-token span {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: bold;
 }
 
@@ -704,13 +737,6 @@ body {
   margin-top: 4px;
 }
 
-.prof-tabs {
-  display: flex;
-  gap: 12px;
-  border-bottom: 2px solid var(--border-color);
-  margin-bottom: 20px;
-}
-
 .prof-tab-btn {
   padding: 10px 20px;
   font-weight: 700;
@@ -741,7 +767,7 @@ body {
 }
 
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
@@ -767,4 +793,89 @@ body {
   border-radius: var(--border-radius-md);
   font-weight: 700;
   cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--border-radius-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-success:hover {
+  background-color: var(--success-hover);
+}
+
+/* Área de Arrastar e Soltar (Drag & Drop) */
+.drag-drop-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.library-box, .target-category-box {
+  background-color: #f8fafc;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 520px;
+}
+
+.box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.box-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drop-zone {
+  flex: 1;
+  border: 2px dashed #94a3b8;
+  border-radius: var(--border-radius-md);
+  padding: 12px;
+  background-color: #ffffff;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  align-content: start;
+  min-height: 380px;
+  transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+  background-color: #ecfdf5;
+  border-color: var(--success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.selection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #e0f2fe;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0369a1;
 }

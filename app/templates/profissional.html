@@ -13,11 +13,17 @@
       <div class="brand-logo" aria-hidden="true">🧩</div>
       <div class="brand-info">
         <h1>CAA-Lab <span>Modo Profissional</span></h1>
-        <p>Configuração, personalização e métricas técnicas do ambiente de comunicação.</p>
+        <p>Configuração, personalização por perfil, biblioteca de símbolos e pranchas.</p>
       </div>
     </div>
 
     <div class="header-badges">
+      <div class="profile-selector-wrap">
+        <span>🧒 Perfil Ativo:</span>
+        <select id="admin-profile-select" aria-label="Selecionar perfil da criança">
+          <!-- Injetado dinamicamente -->
+        </select>
+      </div>
       <a href="/" class="mode-switch-btn" style="background-color: var(--primary);">
         <span>🧒</span>
         <span>MODO CRIANÇA</span>
@@ -28,21 +34,21 @@
   <!-- Container Principal -->
   <main class="main-container">
     <!-- Barra Lateral Profissional -->
-    <aside class="sidebar-categories" style="width: 200px;">
+    <aside class="sidebar-categories" style="width: 220px;">
       <div>
         <div class="sidebar-header">
           <span>⚙️</span>
           <span>ADMINISTRAÇÃO</span>
         </div>
         <div class="category-list">
-          <button class="category-btn prof-tab-btn active" data-tab="tab-painel">
-            <span>📊</span><span>Painel</span>
+          <button class="category-btn prof-tab-btn active" data-tab="tab-pranchas">
+            <span>🎨</span><span>Personalizar Pranchas</span>
           </button>
-          <button class="category-btn prof-tab-btn" data-tab="tab-perfil">
-            <span>👤</span><span>Perfil</span>
+          <button class="category-btn prof-tab-btn" data-tab="tab-perfis">
+            <span>👥</span><span>Gerenciar Perfis</span>
           </button>
-          <button class="category-btn prof-tab-btn" data-tab="tab-vocabulario">
-            <span>🔤</span><span>Vocabulário</span>
+          <button class="category-btn prof-tab-btn" data-tab="tab-painel">
+            <span>📊</span><span>Painel & Métricas</span>
           </button>
         </div>
       </div>
@@ -50,9 +56,176 @@
 
     <!-- Conteúdo Principal com Abas -->
     <section class="prof-container">
-      <!-- Aba 1: Painel Geral / Dashboard -->
-      <div id="tab-painel" class="prof-tab-content active">
-        <h2 style="margin-bottom: 20px;">Resumo Técnico de Uso</h2>
+      <!-- Aba 1: Personalizar Pranchas (Drag & Drop e Seleção Múltipla) -->
+      <div id="tab-pranchas" class="prof-tab-content active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h2>Personalização de Prancha por Perfil</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+              Marque um ou mais símbolos da biblioteca e <strong>arraste e solte</strong> na prancha da categoria desejada.
+            </p>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label for="admin-category-select" style="font-weight: 700;">Categoria Alvo:</label>
+            <select id="admin-category-select" class="form-control" style="width: 200px;">
+              <!-- Injetado via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="drag-drop-workspace">
+          <!-- Coluna Esquerda: Biblioteca Geral de Símbolos -->
+          <div class="library-box">
+            <div class="box-header">
+              <h3><span>📚</span> Biblioteca de Símbolos (Offline)</h3>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="library-search-input" class="form-control" placeholder="Buscar símbolo na biblioteca..." />
+            </div>
+
+            <div class="selection-toolbar">
+              <span id="selected-symbols-count">0 selecionado(s)</span>
+              <button id="btn-add-selected-to-category" class="btn-success" disabled>
+                ➕ Adicionar Selecionados
+              </button>
+            </div>
+
+            <div class="symbols-grid drop-zone" id="library-symbols-grid" style="border-style: solid; border-color: var(--border-color); background-color: #f8fafc; max-height: 400px; overflow-y: auto;">
+              <!-- Símbolos da biblioteca -->
+            </div>
+          </div>
+
+          <!-- Coluna Direita: Prancha da Criança para a Categoria Selecionada -->
+          <div class="target-category-box">
+            <div class="box-header">
+              <h3 id="target-category-name"><span>🎯</span> Prancha da Categoria</h3>
+            </div>
+
+            <div class="selection-toolbar" style="background-color: #f0fdf4; color: #166534;">
+              <span>💡 Arraste símbolos da biblioteca e solte aqui:</span>
+            </div>
+
+            <div class="drop-zone" id="category-drop-zone">
+              <!-- Símbolos atribuídos à categoria da criança -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aba 2: Gerenciar e Criar Perfis -->
+      <div id="tab-perfis" class="prof-tab-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+          <!-- Criar Novo Perfil -->
+          <div class="stat-card">
+            <h2 style="margin-bottom: 16px; color: var(--primary);">➕ Criar Novo Perfil de Criança</h2>
+            <form id="form-new-profile">
+              <div class="form-group">
+                <label for="new-child-nickname">Apelido da Criança *</label>
+                <input type="text" id="new-child-nickname" class="form-control" placeholder="Ex: Joãozinho, Leo, Clarinha" required>
+              </div>
+
+              <div class="form-group">
+                <label for="new-guardian-nickname">Apelido da Mãe ou Acompanhante *</label>
+                <input type="text" id="new-guardian-nickname" class="form-control" placeholder="Ex: Mãe Ana, Tia Carla (Acompanhante)" required>
+              </div>
+
+              <div class="form-group">
+                <label for="new-profile-name">Nome Completo de Registro</label>
+                <input type="text" id="new-profile-name" class="form-control" placeholder="Ex: João Pedro da Silva">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label for="new-symbol-size">Tamanho dos Símbolos</label>
+                  <select id="new-symbol-size" class="form-control">
+                    <option value="pequeno">Pequeno</option>
+                    <option value="medio" selected>Médio</option>
+                    <option value="grande">Grande</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="new-page-items">Símbolos por Página</label>
+                  <select id="new-page-items" class="form-control">
+                    <option value="6">6 símbolos</option>
+                    <option value="12" selected>12 símbolos</option>
+                    <option value="20">20 símbolos</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="new-voice-speed">Velocidade da Voz</label>
+                <input type="range" id="new-voice-speed" min="0.5" max="1.5" step="0.1" value="1.0">
+              </div>
+
+              <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;">
+                Cadastrar Perfil
+              </button>
+            </form>
+          </div>
+
+          <!-- Editar Perfil Existente -->
+          <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h2 style="color: var(--text-primary);">⚙️ Editar Perfil Selecionado</h2>
+              <select id="manage-profile-select" class="form-control" style="width: 200px;">
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-child-nickname">Apelido da Criança</label>
+              <input type="text" id="edit-child-nickname" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-guardian-nickname">Apelido da Mãe / Acompanhante</label>
+              <input type="text" id="edit-guardian-nickname" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-profile-name">Nome Completo</label>
+              <input type="text" id="edit-profile-name" class="form-control">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label for="edit-symbol-size">Tamanho dos Símbolos</label>
+                <select id="edit-symbol-size" class="form-control">
+                  <option value="pequeno">Pequeno</option>
+                  <option value="medio">Médio</option>
+                  <option value="grande">Grande</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="edit-page-items">Símbolos por Página</label>
+                <select id="edit-page-items" class="form-control">
+                  <option value="6">6 símbolos</option>
+                  <option value="12">12 símbolos</option>
+                  <option value="20">20 símbolos</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-voice-speed">Velocidade da Voz</label>
+              <input type="range" id="edit-voice-speed" min="0.5" max="1.5" step="0.1" value="1.0">
+            </div>
+
+            <button id="btn-save-profile-edit" class="btn-success" style="width: 100%; margin-top: 8px;">
+              Salvar Alterações do Perfil
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aba 3: Painel Geral / Dashboard & Métricas -->
+      <div id="tab-painel" class="prof-tab-content">
+        <h2 style="margin-bottom: 20px;">Resumo Técnico de Uso (Privacidade Preservada)</h2>
         
         <div class="stats-grid">
           <div class="stat-card">
@@ -68,7 +241,7 @@
             <div class="stat-value" id="stat-touches-today">-</div>
           </div>
           <div class="stat-card">
-            <h3>Frases Favoritas</h3>
+            <h3>Frases Rápidas</h3>
             <div class="stat-value" id="stat-favorite-phrases">-</div>
           </div>
         </div>
@@ -79,59 +252,11 @@
             <div id="top-messages-list" style="margin-top: 12px;"></div>
           </div>
           <div class="stat-card">
-            <h3>Sobre a Aplicação</h3>
-            <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-secondary);">
-              O CAA-Lab foi desenvolvido para apoiar a comunicação de crianças com dificuldades na fala em rede local fechada, com total conformidade à LGPD e sem dependência de serviços externos.
+            <h3>Sobre a Aplicação e LGPD</h3>
+            <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">
+              O <strong>CAA-Lab</strong> foi concebido para o Laboratório Tecnológico Inclusivo (CETAM / IBC). Opera 100% em rede local, sem dependência de internet ou APIs de terceiros. As métricas registradas são puramente estatísticas técnicas e anônimas.
             </p>
           </div>
-        </div>
-      </div>
-
-      <!-- Aba 2: Configuração de Perfil -->
-      <div id="tab-perfil" class="prof-tab-content">
-        <h2 style="margin-bottom: 20px;">Configuração de Perfil</h2>
-        
-        <div class="form-group">
-          <label for="profile-name">Nome do Usuário/Paciente</label>
-          <input type="text" id="profile-name" class="form-control" value="João Pedro" style="max-width: 400px;">
-        </div>
-
-        <div class="form-group">
-          <label for="profile-symbol-size">Tamanho dos Símbolos</label>
-          <select id="profile-symbol-size" class="form-control" style="max-width: 400px;">
-            <option value="pequeno">Pequeno</option>
-            <option value="medio" selected>Médio</option>
-            <option value="grande">Grande</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="profile-page-items">Quantidade de Símbolos por Página</label>
-          <select id="profile-page-items" class="form-control" style="max-width: 400px;">
-            <option value="6">6 símbolos</option>
-            <option value="12" selected>12 símbolos</option>
-            <option value="20">20 símbolos</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="profile-voice-speed">Velocidade da Voz Sintetizada</label>
-          <input type="range" id="profile-voice-speed" min="0.5" max="1.5" step="0.1" value="1.0" style="max-width: 400px;">
-        </div>
-
-        <button id="btn-save-profile" class="btn-primary" style="margin-top: 10px;">
-          Salvar Configurações
-        </button>
-      </div>
-
-      <!-- Aba 3: Gestão de Vocabulário -->
-      <div id="tab-vocabulario" class="prof-tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2>Biblioteca de Símbolos e Pictogramas</h2>
-        </div>
-
-        <div class="symbols-grid" id="admin-vocab-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
-          <!-- Injetado via JS -->
         </div>
       </div>
     </section>

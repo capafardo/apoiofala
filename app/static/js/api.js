@@ -14,10 +14,11 @@ const API = {
     }
   },
 
-  async getSymbols(categoryId = null, search = '') {
+  async getSymbols(categoryId = null, profileId = null, search = '') {
     try {
       let url = '/api/v1/symbols?';
       if (categoryId) url += `category_id=${categoryId}&`;
+      if (profileId) url += `profile_id=${profileId}&`;
       if (search) url += `search=${encodeURIComponent(search)}&`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Erro ao obter símbolos');
@@ -25,6 +26,47 @@ const API = {
     } catch (e) {
       console.error(e);
       return [];
+    }
+  },
+
+  async getLibrarySymbols(search = '') {
+    try {
+      let url = '/api/v1/symbols/library';
+      if (search) url += `?search=${encodeURIComponent(search)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Erro ao obter biblioteca de símbolos');
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
+  async assignSymbolsToProfileCategory(profileId, categoryId, symbolIds) {
+    try {
+      const res = await fetch(`/api/v1/symbols/profiles/${profileId}/categories/${categoryId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol_ids: symbolIds }),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return { status: 'error' };
+    }
+  },
+
+  async addSymbolsToProfileCategory(profileId, categoryId, symbolIds) {
+    try {
+      const res = await fetch(`/api/v1/symbols/profiles/${profileId}/categories/${categoryId}/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol_ids: symbolIds }),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return { status: 'error' };
     }
   },
 
@@ -49,6 +91,21 @@ const API = {
     } catch (e) {
       console.error(e);
       return [];
+    }
+  },
+
+  async createProfile(data) {
+    try {
+      const res = await fetch('/api/v1/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Erro ao criar perfil');
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   },
 
@@ -89,7 +146,7 @@ const API = {
         }),
       });
     } catch (e) {
-      // Falha de métrica é silenciosa para não travar a aplicação
+      // Falha de métrica é silenciosa
     }
   },
 };

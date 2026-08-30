@@ -8,6 +8,7 @@ from app.models.category import Category
 from app.models.symbol import Symbol
 from app.models.quick_phrase import QuickPhrase
 from app.models.metric import UsageMetric
+from app.models.profile_symbol import ProfileSymbol
 
 __all__ = [
     "User",
@@ -19,4 +20,5 @@ __all__ = [
     "Symbol",
     "QuickPhrase",
     "UsageMetric",
+    "ProfileSymbol",
 ]

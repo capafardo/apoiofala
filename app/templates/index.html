@@ -18,21 +18,25 @@
     </div>
 
     <div class="header-badges">
+      <!-- Seletor de Perfil Ativo -->
+      <div class="profile-selector-wrap" title="Perfil da Criança">
+        <span>🧒 Perfil:</span>
+        <select id="user-profile-select" aria-label="Alternar perfil de comunicação">
+          <!-- Preenchido via JS -->
+        </select>
+      </div>
+
       <div class="badge-item">
         <span>🏠</span>
-        <span>Funciona 100% na rede local</span>
+        <span>Rede Local</span>
       </div>
       <div class="badge-item">
         <span>🛡️</span>
-        <span>Privacidade e proteção de dados</span>
+        <span>Privacidade</span>
       </div>
       <div class="badge-item">
         <span>♿</span>
-        <span>Acessível e personalizável</span>
-      </div>
-      <div class="badge-item">
-        <span>💻</span>
-        <span>Software livre e aberto</span>
+        <span>Acessível</span>
       </div>
       <a href="/profissional" class="mode-switch-btn">
         <span>⚙️</span>
@@ -48,7 +52,7 @@
       <div>
         <div class="sidebar-header">
           <span>🧒</span>
-          <span>MODO CRIANÇA</span>
+          <span id="sidebar-profile-label">MODO CRIANÇA</span>
         </div>
         <nav class="category-list" id="category-list">
           <!-- Injetado dinamicamente via JS -->

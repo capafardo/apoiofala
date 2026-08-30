@@ -10,6 +10,8 @@ from app.models.profile import SymbolSize, ContrastMode
 
 class ProfileBase(BaseModel):
     name: str
+    child_nickname: Optional[str] = None
+    guardian_nickname: Optional[str] = None
     symbol_size: SymbolSize = SymbolSize.MEDIUM
     symbols_per_page: int = 12
     theme_color: str = "blue"
@@ -26,6 +28,8 @@ class ProfileCreate(ProfileBase):
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
+    child_nickname: Optional[str] = None
+    guardian_nickname: Optional[str] = None
     symbol_size: Optional[SymbolSize] = None
     symbols_per_page: Optional[int] = None
     theme_color: Optional[str] = None

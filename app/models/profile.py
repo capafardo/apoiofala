@@ -27,6 +27,10 @@ class Profile(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     name = Column(String(100), nullable=False)
     
+    # Identificação da Criança e Responsável / Acompanhante
+    child_nickname = Column(String(100), nullable=True)
+    guardian_nickname = Column(String(100), nullable=True)
+    
     # Configurações visuais e de acessibilidade
     symbol_size = Column(Enum(SymbolSize), default=SymbolSize.MEDIUM, nullable=False)
     symbols_per_page = Column(Integer, default=12, nullable=False)
@@ -54,3 +58,4 @@ class Profile(Base):
     user = relationship("User", back_populates="profiles")
     quick_phrases = relationship("QuickPhrase", back_populates="profile", cascade="all, delete-orphan")
     custom_symbols = relationship("Symbol", back_populates="profile", cascade="all, delete-orphan")
+    profile_symbols = relationship("ProfileSymbol", back_populates="profile", cascade="all, delete-orphan")

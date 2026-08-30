@@ -1,10 +1,13 @@
 /**
- * CAA-Lab - Modo Criança (Lógica de Prancha de Comunicação)
+ * CAA-Lab - Modo Criança (Lógica de Prancha de Comunicação Personalizada)
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Estado da Aplicação
   const state = {
+    profiles: [],
+    currentProfileId: null,
+    currentProfile: null,
     categories: [],
     currentCategoryId: null,
     currentCategorySlug: 'inicio',
@@ -12,12 +15,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     filteredSymbols: [],
     currentPage: 1,
     pageSize: 12,
-    messageTokens: [], // Array de símbolos selecionados
+    messageTokens: [],
     isHighContrast: false,
-    fontSizeDelta: 0,
   };
 
   // Elementos do DOM
+  const userProfileSelect = document.getElementById('user-profile-select');
+  const sidebarProfileLabel = document.getElementById('sidebar-profile-label');
   const categoriesListEl = document.getElementById('category-list');
   const activeCategoryTitleEl = document.getElementById('active-category-title');
   const symbolsGridEl = document.getElementById('symbols-grid');
@@ -36,7 +40,70 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnFontInc = document.getElementById('btn-font-inc');
   const btnContrastToggle = document.getElementById('btn-contrast-toggle');
 
-  // 1. Inicializar Categorias
+  // 1. Inicializar Perfis
+  async function initProfiles() {
+    state.profiles = await window.API.getProfiles();
+    if (!userProfileSelect) return;
+
+    userProfileSelect.innerHTML = '';
+    state.profiles.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      const childNick = p.child_nickname ? ` (${p.child_nickname})` : '';
+      const guardian = p.guardian_nickname ? ` - Resp: ${p.guardian_nickname}` : '';
+      opt.textContent = `${p.name}${childNick}${guardian}`;
+      userProfileSelect.appendChild(opt);
+    });
+
+    const savedProfileId = localStorage.getItem('caa_lab_active_profile_id');
+    if (savedProfileId && state.profiles.some((p) => p.id === parseInt(savedProfileId))) {
+      state.currentProfileId = parseInt(savedProfileId);
+    } else if (state.profiles.length > 0) {
+      state.currentProfileId = state.profiles[0].id;
+    }
+
+    userProfileSelect.value = state.currentProfileId;
+    applyProfileSettings(state.currentProfileId);
+
+    userProfileSelect.onchange = () => {
+      state.currentProfileId = parseInt(userProfileSelect.value);
+      localStorage.setItem('caa_lab_active_profile_id', state.currentProfileId);
+      applyProfileSettings(state.currentProfileId);
+      loadSymbols();
+      loadQuickPhrases();
+    };
+  }
+
+  function applyProfileSettings(profileId) {
+    const p = state.profiles.find((x) => x.id === profileId);
+    if (!p) return;
+    state.currentProfile = p;
+
+    // Atualizar label na barra lateral
+    if (sidebarProfileLabel) {
+      const nick = p.child_nickname || p.name;
+      const resp = p.guardian_nickname ? ` • ${p.guardian_nickname}` : '';
+      sidebarProfileLabel.textContent = `${nick}${resp}`;
+    }
+
+    // Aplicar tamanho dos símbolos
+    document.body.classList.remove('symbol-small', 'symbol-large');
+    if (p.symbol_size === 'pequeno') {
+      document.body.classList.add('symbol-small');
+    } else if (p.symbol_size === 'grande') {
+      document.body.classList.add('symbol-large');
+    }
+
+    // Aplicar itens por página
+    state.pageSize = p.symbols_per_page || 12;
+
+    // Ajustar velocidade da voz
+    if (window.speechCtrl && p.voice_speed) {
+      window.speechCtrl.setSpeed(p.voice_speed);
+    }
+  }
+
+  // 2. Inicializar Categorias
   async function initCategories() {
     state.categories = await window.API.getCategories();
     renderCategories();
@@ -87,9 +154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadSymbols();
   }
 
-  // 2. Carregar e Renderizar Símbolos
+  // 3. Carregar e Renderizar Símbolos (considerando perfil ativo)
   async function loadSymbols() {
-    state.allSymbols = await window.API.getSymbols(state.currentCategoryId);
+    state.allSymbols = await window.API.getSymbols(state.currentCategoryId, state.currentProfileId);
     state.filteredSymbols = state.allSymbols;
     renderSymbolsGrid();
   }
@@ -103,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pageItems = state.filteredSymbols.slice(startIdx, startIdx + state.pageSize);
 
     if (pageItems.length === 0) {
-      symbolsGridEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">Nenhum símbolo cadastrado nesta categoria.</div>';
+      symbolsGridEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">Nenhum símbolo disponível nesta categoria para este perfil.</div>';
       renderPagination(1, 1);
       return;
     }
@@ -172,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 3. Construtor de Mensagens (Minha Mensagem)
+  // 4. Construtor de Mensagens (Minha Mensagem)
   function addSymbolToMessage(symbol) {
     state.messageTokens.push(symbol);
     renderMessageBuilder();
@@ -192,7 +259,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (state.messageTokens.length === 0) return '';
     const words = state.messageTokens.map((t) => t.spoken_text || t.text_label);
     let sentence = words.join(' ');
-    // Capitalizar primeira letra e finalizar com ponto
     sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.';
     return sentence;
   }
@@ -242,10 +308,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (speakInlineBtn) speakInlineBtn.addEventListener('click', speakConstructedMessage);
   if (clearMainBtn) clearMainBtn.addEventListener('click', clearMessage);
 
-  // 4. Frases Rápidas
+  // 5. Frases Rápidas
   async function loadQuickPhrases() {
     if (!quickPhrasesListEl) return;
-    const phrases = await window.API.getQuickPhrases();
+    const phrases = await window.API.getQuickPhrases(state.currentProfileId);
     quickPhrasesListEl.innerHTML = '';
 
     phrases.forEach((qp) => {
@@ -265,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 5. Controles de Acessibilidade
+  // 6. Controles de Acessibilidade
   if (btnContrastToggle) {
     btnContrastToggle.addEventListener('click', () => {
       state.isHighContrast = !state.isHighContrast;
@@ -295,6 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Carregamento Inicial
+  await initProfiles();
   await initCategories();
   await loadQuickPhrases();
 });
