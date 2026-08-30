@@ -1,0 +1,58 @@
+# Uso interno
+uso-interno/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Ambientes virtuais
+.venv/
+venv/
+ENV/
+env/
+
+# Variáveis de ambiente e segredos
+.env
+*.local
+
+# Banco de dados e uploads locais
+data/*
+!data/.gitkeep
+assets/uploads/*
+!assets/uploads/.gitkeep
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
