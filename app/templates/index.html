@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CAA-Lab — Comunicação Aumentativa e Alternativa</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Header Superior -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo" aria-hidden="true">🧩</div>
+      <div class="brand-info">
+        <h1>CAA-Lab <span>Comunicação Aumentativa e Alternativa</span></h1>
+        <p>Comunicar é conectar — Tecnologia como ponte para a expressão, autonomia e inclusão.</p>
+      </div>
+    </div>
+
+    <div class="header-badges">
+      <div class="badge-item">
+        <span>🏠</span>
+        <span>Funciona 100% na rede local</span>
+      </div>
+      <div class="badge-item">
+        <span>🛡️</span>
+        <span>Privacidade e proteção de dados</span>
+      </div>
+      <div class="badge-item">
+        <span>♿</span>
+        <span>Acessível e personalizável</span>
+      </div>
+      <div class="badge-item">
+        <span>💻</span>
+        <span>Software livre e aberto</span>
+      </div>
+      <a href="/profissional" class="mode-switch-btn">
+        <span>⚙️</span>
+        <span>MODO PROFISSIONAL</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <main class="main-container">
+    <!-- Barra Lateral de Categorias -->
+    <aside class="sidebar-categories" aria-label="Navegação de Categorias">
+      <div>
+        <div class="sidebar-header">
+          <span>🧒</span>
+          <span>MODO CRIANÇA</span>
+        </div>
+        <nav class="category-list" id="category-list">
+          <!-- Injetado dinamicamente via JS -->
+        </nav>
+      </div>
+
+      <div class="sidebar-actions">
+        <button id="btn-speak-main" class="btn-action-speak" aria-label="Falar mensagem completa">
+          <span>🔊</span>
+          <span>FALAR</span>
+        </button>
+        <button id="btn-clear-main" class="btn-action-clear" aria-label="Limpar mensagem">
+          <span>🗑️</span>
+          <span>LIMPAR</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área Central de Símbolos -->
+    <section class="symbols-area" aria-label="Prancha de Pictogramas">
+      <div class="symbols-header">
+        <h2 class="active-category-title" id="active-category-title">Início</h2>
+        
+        <div class="accessibility-controls">
+          <button id="btn-font-dec" class="acc-btn" title="Diminuir símbolos" aria-label="Diminuir símbolos">A-</button>
+          <button id="btn-font-inc" class="acc-btn" title="Aumentar símbolos" aria-label="Aumentar símbolos">A+</button>
+          <button id="btn-contrast-toggle" class="acc-btn" title="Alternar alto contraste" aria-label="Alternar alto contraste">🌓</button>
+        </div>
+      </div>
+
+      <div class="symbols-grid-wrapper">
+        <div class="symbols-grid" id="symbols-grid">
+          <!-- Injetado dinamicamente via JS -->
+        </div>
+
+        <div class="pagination-controls">
+          <button id="prev-page-btn" class="page-arrow-btn" aria-label="Página anterior">‹</button>
+          <div class="pagination-dots" id="pagination-dots"></div>
+          <button id="next-page-btn" class="page-arrow-btn" aria-label="Próxima página">›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Painel Lateral Direito (Minha Mensagem & Frases Rápidas) -->
+    <aside class="right-panel" aria-label="Construção de Mensagens e Atalhos">
+      <!-- Construtor de Mensagens -->
+      <div class="panel-card">
+        <div class="panel-card-title">
+          <span>💬</span>
+          <span>MINHA MENSAGEM</span>
+        </div>
+
+        <div class="message-builder-flow" id="message-builder-flow">
+          <span style="color: var(--text-secondary); font-size: 0.9rem;">Toque nos símbolos para montar sua mensagem...</span>
+        </div>
+
+        <div class="message-text-bar">
+          <div class="rendered-message-text" id="rendered-message-text">...</div>
+          <button id="btn-speak-inline" class="btn-inline-speak" aria-label="Ouvir mensagem">
+            <span>🔊</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Frases Rápidas -->
+      <div class="panel-card">
+        <div class="panel-card-title">
+          <span>⭐</span>
+          <span>FRASES RÁPIDAS</span>
+        </div>
+
+        <div class="quick-phrases-list" id="quick-phrases-list">
+          <!-- Injetado dinamicamente via JS -->
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="app-footer">
+    <div class="footer-item">
+      <span>🤝</span>
+      <span>Desenvolvido para o Laboratório Tecnológico Inclusivo | CETAM / IBC</span>
+    </div>
+    <div class="footer-item">
+      <span>🔒</span>
+      <span>Rede local fechada e protegida</span>
+    </div>
+    <div class="footer-item">
+      <span>🐧</span>
+      <span>Estação Ubuntu Linux — Versão MVP 1.0</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/static/js/speech.js"></script>
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

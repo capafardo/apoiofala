@@ -77,8 +77,10 @@ async def test_admin_register_new_user():
         )
         admin_token = admin_login.json()["access_token"]
 
+        import uuid
+        unique_username = f"user_{uuid.uuid4().hex[:8]}"
         new_user_data = {
-            "username": "novousuario",
+            "username": unique_username,
             "full_name": "Novo Usuário Teste",
             "password": "senhaNova123!",
             "role": "user",
@@ -90,7 +92,7 @@ async def test_admin_register_new_user():
         )
         assert res.status_code == 201
         data = res.json()
-        assert data["username"] == "novousuario"
+        assert data["username"] == unique_username
 
 
 @pytest.mark.asyncio

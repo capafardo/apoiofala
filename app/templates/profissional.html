@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAA-Lab — Painel Profissional</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Header Superior -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo" aria-hidden="true">🧩</div>
+      <div class="brand-info">
+        <h1>CAA-Lab <span>Modo Profissional</span></h1>
+        <p>Configuração, personalização e métricas técnicas do ambiente de comunicação.</p>
+      </div>
+    </div>
+
+    <div class="header-badges">
+      <a href="/" class="mode-switch-btn" style="background-color: var(--primary);">
+        <span>🧒</span>
+        <span>MODO CRIANÇA</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <main class="main-container">
+    <!-- Barra Lateral Profissional -->
+    <aside class="sidebar-categories" style="width: 200px;">
+      <div>
+        <div class="sidebar-header">
+          <span>⚙️</span>
+          <span>ADMINISTRAÇÃO</span>
+        </div>
+        <div class="category-list">
+          <button class="category-btn prof-tab-btn active" data-tab="tab-painel">
+            <span>📊</span><span>Painel</span>
+          </button>
+          <button class="category-btn prof-tab-btn" data-tab="tab-perfil">
+            <span>👤</span><span>Perfil</span>
+          </button>
+          <button class="category-btn prof-tab-btn" data-tab="tab-vocabulario">
+            <span>🔤</span><span>Vocabulário</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal com Abas -->
+    <section class="prof-container">
+      <!-- Aba 1: Painel Geral / Dashboard -->
+      <div id="tab-painel" class="prof-tab-content active">
+        <h2 style="margin-bottom: 20px;">Resumo Técnico de Uso</h2>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Usuários Ativos</h3>
+            <div class="stat-value" id="stat-active-users">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Mensagens Hoje</h3>
+            <div class="stat-value" id="stat-messages-today">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Toques Hoje</h3>
+            <div class="stat-value" id="stat-touches-today">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Frases Favoritas</h3>
+            <div class="stat-value" id="stat-favorite-phrases">-</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="stat-card">
+            <h3>Mensagens Mais Usadas</h3>
+            <div id="top-messages-list" style="margin-top: 12px;"></div>
+          </div>
+          <div class="stat-card">
+            <h3>Sobre a Aplicação</h3>
+            <p style="margin-top: 8px; font-size: 0.95rem; color: var(--text-secondary);">
+              O CAA-Lab foi desenvolvido para apoiar a comunicação de crianças com dificuldades na fala em rede local fechada, com total conformidade à LGPD e sem dependência de serviços externos.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aba 2: Configuração de Perfil -->
+      <div id="tab-perfil" class="prof-tab-content">
+        <h2 style="margin-bottom: 20px;">Configuração de Perfil</h2>
+        
+        <div class="form-group">
+          <label for="profile-name">Nome do Usuário/Paciente</label>
+          <input type="text" id="profile-name" class="form-control" value="João Pedro" style="max-width: 400px;">
+        </div>
+
+        <div class="form-group">
+          <label for="profile-symbol-size">Tamanho dos Símbolos</label>
+          <select id="profile-symbol-size" class="form-control" style="max-width: 400px;">
+            <option value="pequeno">Pequeno</option>
+            <option value="medio" selected>Médio</option>
+            <option value="grande">Grande</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="profile-page-items">Quantidade de Símbolos por Página</label>
+          <select id="profile-page-items" class="form-control" style="max-width: 400px;">
+            <option value="6">6 símbolos</option>
+            <option value="12" selected>12 símbolos</option>
+            <option value="20">20 símbolos</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="profile-voice-speed">Velocidade da Voz Sintetizada</label>
+          <input type="range" id="profile-voice-speed" min="0.5" max="1.5" step="0.1" value="1.0" style="max-width: 400px;">
+        </div>
+
+        <button id="btn-save-profile" class="btn-primary" style="margin-top: 10px;">
+          Salvar Configurações
+        </button>
+      </div>
+
+      <!-- Aba 3: Gestão de Vocabulário -->
+      <div id="tab-vocabulario" class="prof-tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Biblioteca de Símbolos e Pictogramas</h2>
+        </div>
+
+        <div class="symbols-grid" id="admin-vocab-grid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
+          <!-- Injetado via JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Rodapé Institucional -->
+  <footer class="app-footer">
+    <div class="footer-item">
+      <span>🤝</span>
+      <span>Laboratório Tecnológico Inclusivo | CETAM / IBC</span>
+    </div>
+    <div class="footer-item">
+      <span>🐧</span>
+      <span>Ubuntu Linux — Modo de Configuração Técnica</span>
+    </div>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>
