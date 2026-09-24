@@ -64,9 +64,6 @@ async def text_to_speech(
 
     # Motor neural (auto ou neural): edge-tts com fallback espeak em 'auto'
     try:
-        if not neural_tts.is_available():
-            raise RuntimeError("edge-tts não instalado")
-
         audio, media_type, used = await neural_tts.synthesize_async(text, language, speed)
         if used == "edge-neural":
             return Response(
@@ -75,7 +72,10 @@ async def text_to_speech(
                 headers={"X-TTS-Engine": "edge-neural", "X-TTS-Voice": "microsoft"},
             )
         if engine == "neural":
-            raise RuntimeError("Serviço neural indisponível e fallback desativado")
+            raise HTTPException(
+                status_code=503,
+                detail="Serviço neural indisponível e fallback desativado",
+            )
         # 'auto': usa o resultado do fallback espeak
         return Response(content=audio, media_type=media_type, headers={"X-TTS-Engine": used})
     except HTTPException:

@@ -111,17 +111,28 @@ class SpeechController {
 
     return this._getAudioUrl(this._backendUrl(text)).then(
       (blobUrl) =>
-        new Promise((resolve) => {
-          const done = () => {
+        new Promise((resolve, reject) => {
+          const cleanup = () => {
             el.onended = null;
             el.onerror = null;
+          };
+          el.onended = () => {
+            cleanup();
             resolve();
           };
-          el.onended = done;
-          el.onerror = done;
+          el.onerror = () => {
+            cleanup();
+            reject(new Error("Falha ao decodificar/reproduzir áudio do backend"));
+          };
           if (el.src !== blobUrl) el.src = blobUrl;
           el.currentTime = 0; // permite repetir a mesma frase
-          el.play().catch(done);
+          const playPromise = el.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch((err) => {
+              cleanup();
+              reject(err);
+            });
+          }
         })
     );
   }
@@ -133,17 +144,22 @@ class SpeechController {
     if (!this.synth) return Promise.resolve();
 
     return new Promise((resolve) => {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = this.rate;
-      utterance.pitch = this.pitch;
-      utterance.lang = this.language;
-      if (this.selectedVoice) utterance.voice = this.selectedVoice;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = this.rate;
+        utterance.pitch = this.pitch;
+        utterance.lang = this.language;
+        if (this.selectedVoice) utterance.voice = this.selectedVoice;
 
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      this.synth.speak(utterance);
+        utterance.onend = () => resolve();
+        utterance.onerror = () => resolve();
+        this.synth.speak(utterance);
+      } catch (err) {
+        console.warn("Erro ao sintetizar no navegador:", err);
+        resolve();
+      }
     });
   }
 }

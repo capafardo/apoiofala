@@ -61,6 +61,9 @@ def precache_all():
                 cached_count += 1
                 continue
 
+            # Para pré-cache em lote, resetamos o circuit breaker para tentar cada expressão
+            neural_tts._LAST_NETWORK_FAILURE = 0.0
+
             try:
                 audio, media_type, engine = neural_tts.synthesize(text, language="pt-BR", speed=1.0)
                 if engine == "edge-neural":

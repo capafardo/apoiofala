@@ -88,8 +88,8 @@ def _should_try_online() -> bool:
 
 
 def is_available() -> bool:
-    """Indica se o provedor neuronal pode ser utilizado neste ambiente."""
-    return _should_try_online()
+    """Indica se o módulo de síntese neural está instalado."""
+    return EDGE_TTS_AVAILABLE
 
 
 async def _synthesize_online(text: str, voice: str, rate: str) -> bytes:

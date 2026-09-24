@@ -26,8 +26,16 @@ fi
 
 if ! command -v espeak-ng >/dev/null 2>&1 && ! command -v espeak >/dev/null 2>&1; then
     echo "[AVISO] 'espeak-ng' não encontrado no sistema operacional."
-    echo "        Para garantir síntese de fala 100% offline no Linux, instale:"
-    echo "        sudo apt install -y espeak-ng"
+    echo "[INFO] Tentando instalar sintetizador espeak-ng via apt..."
+    if command -v sudo >/dev/null 2>&1; then
+        sudo apt-get update -qq && sudo apt-get install -y espeak-ng || true
+    fi
+    if ! command -v espeak-ng >/dev/null 2>&1 && ! command -v espeak >/dev/null 2>&1; then
+        echo "[AVISO] Não foi possível instalar espeak-ng automaticamente. Para suporte offline a palavras inéditas:"
+        echo "        sudo apt install -y espeak-ng"
+    else
+        echo "[OK] Sintetizador espeak-ng instalado com sucesso."
+    fi
 else
     echo "[OK] Sintetizador espeak-ng detectado no sistema."
 fi
