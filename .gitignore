@@ -1,5 +1,7 @@
-# Uso interno
+# Uso interno e arquivos locais de apoio
 uso-interno/
+CONTENT.md
+inspiracao-design.png
 
 # Python
 __pycache__/
