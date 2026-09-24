@@ -1,21 +1,31 @@
 # Operação e Implantação - CAA-Lab
 
-## 1. Inicialização Rápida (Execução Local Nativa / Sem Docker)
+## 1. Instalação Inicial (1x com internet)
 
-Para iniciar a aplicação em qualquer estação Ubuntu (sem uso de Docker):
+Para configurar a estação de trabalho após clonar o repositório:
+
+```bash
+chmod +x instalar.sh iniciar.sh parar.sh
+./instalar.sh
+```
+
+O script cuidará de:
+1. Verificar dependências de sistema (`python3`, `python3-venv`, `espeak-ng`);
+2. Criar os diretórios locais necessários (`data/`, `assets/`);
+3. Preparar o ambiente virtual Python local (`.venv`) e instalar dependências;
+4. Gerar a biblioteca de pictogramas vetoriais locais (SVGs);
+5. Inicializar o banco de dados SQLite local (`caa_lab.db`) com as migrações;
+6. Pré-aquecer o cache de áudio TTS de todos os símbolos e frases padrão.
+
+## 2. Execução Diária (100% Offline / Sem Internet / Sem Docker)
+
+Para iniciar a aplicação no dia a dia:
 
 ```bash
 ./iniciar.sh
 ```
 
-O script cuidará de:
-1. Configurar o arquivo de variáveis de ambiente (`.env`);
-2. Criar os diretórios locais necessários (`data/`, `assets/`);
-3. Preparar o ambiente virtual Python local (`.venv`) e instalar dependências;
-4. Gerar os pictogramas essenciais caso necessário;
-5. Garantir que nenhum container Docker do projeto esteja ativo ou configurado para inicialização;
-6. Subir o servidor Uvicorn nativo em segundo plano e validar o healthcheck (`/health`);
-7. Abrir a interface web no navegador padrão da estação (`xdg-open`).
+O script inicia o servidor Uvicorn nativo em segundo plano e abre o navegador padrão automaticamente.
 
 Para encerrar o servidor:
 
@@ -23,26 +33,20 @@ Para encerrar o servidor:
 ./parar.sh
 ```
 
-## 2. Execução em Ambiente de Desenvolvimento
+## 3. Execução em Ambiente de Desenvolvimento
 
 ```bash
 source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
 
-## 3. Voz do Sistema (TTS)
+## 4. Voz do Sistema (TTS Offline-First)
 
-A síntese de voz do backend usa, por padrão, a **voz neural da Microsoft**
-(pt-BR natural, ex.: *Francisca*), via biblioteca `edge-tts` — gratuita e sem
-chave de API. As respostas ficam em cache em `assets/audio/tts-cache/` para
-reprodução instantânea em repetições.
-
-Cascata de motores (padrão `TTS_ENGINE=auto`):
-
-1. **edge-neural** — voz natural da Microsoft (requer internet no primeiro uso;
-   depois, servido pelo cache local);
-2. **espeak-ng** — voz robotizada, 100% offline, usada automaticamente se não
-   houver conectividade ou via `engine=espeak` na requisição.
-
-Em ambientes **sem internet**, defina `TTS_ENGINE=espeak` no `.env` (ou passe
-`engine=espeak` na chamada) para manter o áudio integralmente local.
+A síntese de voz do backend opera em arquitetura híbrida de alto desempenho:
+* **Cache Local em Disco (`assets/audio/tts-cache/`):** Durante o `./instalar.sh`, os áudios neurais dos símbolos e frases padrão já são pré-sintetizados e armazenados em disco. Na reprodução diária offline, são servidos instantaneamente (<5ms).
+* **Circuit Breaker Automático:** Se uma palavra inédita for falada sem internet, o backend detecta a ausência de rede sem travamentos e chaveia imediatamente (<20ms) para o motor local **espeak-ng** ou Web Speech API.
+* **Modo Offline Estrito:** Em estações isoladas por política de segurança, basta definir no `.env`:
+  ```ini
+  TTS_OFFLINE_MODE=true
+  ```
+  Neste modo, nenhuma requisição externa de áudio jamais é tentada.

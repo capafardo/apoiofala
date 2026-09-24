@@ -139,3 +139,25 @@ def test_neural_rate_mapping_and_cache(monkeypatch, tmp_path):
     assert engine2 == "edge-neural"
     assert audio2 == b"mp3-bytes"
     assert len(list(tmp_path.glob("*.mp3"))) == 1
+
+
+def test_offline_mode_bypasses_network_to_espeak(monkeypatch, tmp_path):
+    """Com TTS_OFFLINE_MODE=True, a síntese pula requisições de rede e vai direto ao espeak."""
+    monkeypatch.setattr(neural_tts.settings, "TTS_OFFLINE_MODE", True)
+    monkeypatch.setattr(neural_tts, "_cache_dir", lambda: tmp_path)
+
+    audio, media_type, engine = neural_tts.synthesize("frase nova sem cache", "pt-BR", 1.0)
+    assert engine == "espeak-ng"
+    assert media_type == "audio/wav"
+    assert audio[:4] == b"RIFF"
+
+
+def test_circuit_breaker_bypasses_after_failure(monkeypatch, tmp_path):
+    """Após falha na tentativa online, as chamadas subsequentes caem direto no espeak sem esperar."""
+    monkeypatch.setattr(neural_tts, "_cache_dir", lambda: tmp_path)
+    # Simula última falha recente (5 segundos atrás)
+    monkeypatch.setattr(neural_tts, "_LAST_NETWORK_FAILURE", neural_tts.time.monotonic() - 5.0)
+
+    audio, media_type, engine = neural_tts.synthesize("outra frase", "pt-BR", 1.0)
+    assert engine == "espeak-ng"
+    assert media_type == "audio/wav"

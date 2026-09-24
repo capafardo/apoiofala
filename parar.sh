@@ -23,19 +23,13 @@ if [ -f "$PID_FILE" ]; then
     rm -f "$PID_FILE"
 fi
 
-# 2. Encerrar qualquer processo uvicorn rodando app.main:app neste diretório
+# 2. Encerrar qualquer processo uvicorn associado a este projeto
 PIDS=$(pgrep -f "uvicorn app.main:app" 2>/dev/null || true)
 if [ -n "$PIDS" ]; then
     echo "[INFO] Encerrando processos Uvicorn ativos ($PIDS)..."
     # shellcheck disable=SC2086
     kill $PIDS 2>/dev/null || true
     STOPPED=true
-fi
-
-# 3. Garantir que containers docker antigos do projeto também não fiquem rodando
-if command -v docker >/dev/null 2>&1; then
-    docker stop caa-lab-app >/dev/null 2>&1 || true
-    docker rm caa-lab-app >/dev/null 2>&1 || true
 fi
 
 if [ "$STOPPED" = true ]; then

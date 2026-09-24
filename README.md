@@ -66,7 +66,7 @@ O **CAA-Lab** é uma aplicação web local de apoio à **Comunicação Aumentati
 * **Banco de Dados:** SQLite com modo WAL (*Write-Ahead Logging*) e integridade relacional de chaves estrangeiras ativada.
 * **Frontend:** HTML5 Semântico, CSS3 Moderno com variáveis nativas para Alto Contraste e JavaScript Modular (ES Modules) nativo sem necessidade de compilação em runtime.
 * **Síntese de Voz (TTS):** Abstração `SpeechService` com provedor cliente via Web Speech API (zero latência) e backend com **voz neural Microsoft (edge-tts, gratuita)** com cache em disco e fallback espeak-ng offline.
-* **Containerização:** Docker e Docker Compose com volumes de dados persistentes.
+* **Execução Nativa:** Execução direta no sistema operacional via scripts Bash (`./instalar.sh`, `./iniciar.sh`, `./parar.sh`), sem necessidade de Docker.
 
 ---
 
@@ -90,59 +90,61 @@ apoio-fala/
 │   └── build_deb.sh         #   Script de build do pacote .deb
 ├── dist/                    # Pacote .deb gerado (ignorado pelo git)
 ├── docs/                    # Documentação técnica detalhada
-├── scripts/                 # Scripts auxiliares (geração de SVGs offline)
+├── scripts/                 # Scripts auxiliares (geração de SVGs offline, pré-cache TTS)
 ├── tests/                   # Testes automatizados (Unitários e Integração)
-├── docker-compose.yml       # Orquestração de containers
-├── Dockerfile               # Imagem Docker slim
-├── iniciar.sh               # Script mestre de inicialização automática no Ubuntu
+├── instalar.sh              # Script de instalação e configuração inicial (1x com internet)
+├── iniciar.sh               # Script de inicialização automática (100% offline)
+├── parar.sh                 # Script para encerrar a aplicação local
 └── requirements.txt         # Dependências do Python
 ```
 
 ---
 
-## 💻 Como Executar a Aplicação
+## 💻 Como Instalar e Executar a Aplicação (100% Offline)
 
-### Opção 1: Inicialização Automática no Ubuntu Linux (Recomendado — Sem Docker)
+A aplicação foi projetada para rodar **diretamente no sistema operacional** (sem Docker), operando com banco de dados local SQLite, assets vetoriais locais e síntese de voz com cache em disco e fallback para `espeak-ng`.
 
-O script `iniciar.sh` prepara o ambiente virtual Python local, configura o `.env`, valida dependências, sobe o serviço nativamente no host (sem usar Docker) e abre o navegador automaticamente via `xdg-open`:
+### Passo 1: Instalação Inicial (Executado 1 única vez, com internet)
+
+Após clonar o repositório, execute o script de instalação para configurar o ambiente virtual, dependências, banco local e pré-gerar os áudios e pictogramas:
 
 ```bash
-chmod +x iniciar.sh parar.sh
-./iniciar.sh
+chmod +x instalar.sh iniciar.sh parar.sh
+./instalar.sh
+```
 
-# Para encerrar o serviço:
+O script `instalar.sh` automaticamente:
+1. Verifica dependências de sistema (`python3`, `python3-venv`, `espeak-ng`);
+2. Cria o ambiente virtual `.venv` e instala as bibliotecas Python;
+3. Gera os arquivos de banco de dados SQLite (`./data/caa_lab.db`) e migrações;
+4. Gera e valida os mais de 80 pictogramas vetoriais locais;
+5. Pré-aquece o cache de áudio das expressões padrão para disponibilidade offline imediata.
+
+---
+
+### Passo 2: Execução no Dia a Dia (100% Offline, sem internet)
+
+Com a instalação concluída, a máquina pode ser desconectada da internet e a aplicação iniciada a qualquer momento:
+
+```bash
+./iniciar.sh
+```
+
+O script inicia o backend localmente e abre o navegador padrão automaticamente em `http://localhost:8000`.
+
+**Para encerrar o serviço:**
+```bash
 ./parar.sh
 ```
 
 ---
 
-### Opção 2: Com Docker Compose
+### Opção 2: Desenvolvimento Local Manual
+
+Se preferir rodar em modo de desenvolvimento com live reload:
 
 ```bash
-# Iniciar container em segundo plano
-docker compose up -d
-
-# Verificar logs
-docker compose logs -f
-
-# Acessar a aplicação
-# Modo Criança: http://localhost:8000
-# Modo Profissional: http://localhost:8000/profissional
-```
-
----
-
-### Opção 3: Ambiente de Desenvolvimento Local (Python)
-
-```bash
-# 1. Criar e ativar o ambiente virtual
-python3 -m venv .venv
 source .venv/bin/activate
-
-# 2. Instalar dependências
-pip install -r requirements.txt
-
-# 3. Executar o servidor Uvicorn
 uvicorn app.main:app --reload --port 8000
 ```
 

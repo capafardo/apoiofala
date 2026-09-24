@@ -14,6 +14,7 @@ import asyncio
 import hashlib
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -41,8 +42,12 @@ LANGUAGE_VOICES = {
     "es": "es-ES-ElviraNeural",
 }
 
-# Timeout da síntese online (segundos) — mantém a resposta ágil para CAA
-SYNTH_TIMEOUT_S = 12
+# Timeout da síntese online (segundos) — mantido baixo (3s) para resposta ágil sem travar offline
+SYNTH_TIMEOUT_S = 3
+
+# Circuit breaker para operação offline: após falha de rede, não tenta novamente por 60s
+_LAST_NETWORK_FAILURE = 0.0
+_CIRCUIT_BREAKER_SECONDS = 60.0
 
 
 def _cache_dir() -> Path:
@@ -70,9 +75,21 @@ def _rate_percent(speed: float) -> str:
     return f"{'+' if pct >= 0 else ''}{pct}%"
 
 
+def _should_try_online() -> bool:
+    """Verifica se devemos tentar síntese online na Microsoft."""
+    if not EDGE_TTS_AVAILABLE:
+        return False
+    if getattr(settings, "TTS_OFFLINE_MODE", False):
+        return False
+    # Circuit breaker: evita travar a interface com timeouts se a rede estiver fora
+    if time.monotonic() - _LAST_NETWORK_FAILURE < _CIRCUIT_BREAKER_SECONDS:
+        return False
+    return True
+
+
 def is_available() -> bool:
     """Indica se o provedor neuronal pode ser utilizado neste ambiente."""
-    return EDGE_TTS_AVAILABLE
+    return _should_try_online()
 
 
 async def _synthesize_online(text: str, voice: str, rate: str) -> bytes:
@@ -126,8 +143,8 @@ def synthesize(text: str, language: str = "pt-BR", speed: float = 1.0) -> Tuple[
     if cache_file.is_file() and cache_file.stat().st_size > 0:
         return cache_file.read_bytes(), "audio/mpeg", "edge-neural"
 
-    # 2. Síntese online (Microsoft Edge) com limite de tempo
-    if EDGE_TTS_AVAILABLE:
+    # 2. Síntese online (Microsoft Edge) com limite de tempo e circuit-breaker
+    if _should_try_online():
         try:
             async def _run() -> bytes:
                 return await asyncio.wait_for(
@@ -138,7 +155,9 @@ def synthesize(text: str, language: str = "pt-BR", speed: float = 1.0) -> Tuple[
             cache_file.write_bytes(audio)
             return audio, "audio/mpeg", "edge-neural"
         except Exception:
-            pass  # cai para o fallback offline
+            global _LAST_NETWORK_FAILURE
+            _LAST_NETWORK_FAILURE = time.monotonic()
+            pass  # cai imediatamente para o fallback offline
 
     # 3. Fallback 100% offline (espeak-ng)
     audio, media_type = _synthesize_espeak(text, language, speed)

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     DEFAULT_LANGUAGE: str = "pt-BR"
     DEFAULT_VOICE_RATE: float = 1.0
+    TTS_OFFLINE_MODE: bool = False
 
     DATA_DIR: Path = BASE_DIR / "data"
     ASSETS_DIR: Path = BASE_DIR / "assets"
