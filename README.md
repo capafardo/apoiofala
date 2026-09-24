@@ -13,11 +13,10 @@
   - [Modo Profissional (Administração & Personalização)](#2-modo-profissional-administração--personalização)
 - [Arquitetura & Stack Tecnológica](#-arquitetura--stack-tecnológica)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Como Executar a Aplicação](#-como-executar-a-aplicação)
-  - [Opção 1: Inicialização Automática no Ubuntu Linux](#opção-1-inicialização-automática-no-ubuntu-linux-recomendado)
-  - [Opção 2: Com Docker Compose](#opção-2-com-docker-compose)
-  - [Opção 3: Ambiente de Desenvolvimento Local (Python)](#opção-3-ambiente-de-desenvolvimento-local-python)
-  - [Opção 4: Aplicativo Desktop (.deb) — ApoioFala](#opção-4-aplicativo-desktop-deb--apoiofala)
+- [Como Instalar e Executar a Aplicação](#-como-instalar-e-executar-a-aplicação-100-offline)
+  - [Passo 1: Instalação Inicial (1x com internet)](#passo-1-instalação-inicial-executado-1-única-vez-com-internet)
+  - [Passo 2: Execução no Dia a Dia (100% Offline)](#passo-2-execução-no-dia-a-dia-100-offline-sem-internet)
+  - [Desenvolvimento Local](#opção-2-desenvolvimento-local-manual)
 - [Catálogo de Testes Automatizados](#-catálogo-de-testes-automatizados)
 - [Conformidade com a LGPD e Segurança](#-conformidade-com-a-lgpd-e-segurança)
 - [Documentação Técnica Completa](#-documentação-técnica-completa)
@@ -84,11 +83,6 @@ apoio-fala/
 │   └── templates/           # Templates HTML (index.html, profissional.html)
 ├── assets/                  # Volumes persistentes de pictogramas e áudio
 ├── data/                    # Volume do banco de dados SQLite persistente
-├── desktop/                 # Versão desktop (.deb): shell Electron + empacotamento
-│   ├── electron/            #   Shell Electron (janela própria, backend embutido)
-│   ├── deb/                 #   Arquivos do pacote (control, postinst, ícone, .desktop)
-│   └── build_deb.sh         #   Script de build do pacote .deb
-├── dist/                    # Pacote .deb gerado (ignorado pelo git)
 ├── docs/                    # Documentação técnica detalhada
 ├── scripts/                 # Scripts auxiliares (geração de SVGs offline, pré-cache TTS)
 ├── tests/                   # Testes automatizados (Unitários e Integração)
@@ -150,42 +144,9 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-### Opção 4: Aplicativo Desktop (.deb) — ApoioFala
-
-Uma versão **desktop instalável** (`.deb`) chamada **ApoioFala**, que abre a prancha em **janela própria** (sem navegador), com o backend FastAPI embutido e dados persistentes **por usuário** em `~/.local/share/apoiofala/`.
-
-**Características:**
-* Janela nativa (Electron/Chromium) sem barra de endereço nem abas — ideal para uso por crianças;
-* `F11` alterna tela cheia; modo quiosque via `CAA_KIOSK=1` (sair com `Ctrl+Shift+X`);
-* Síntese de voz robusta: Web Speech API (latência zero) com **fallback automático para o backend** — voz neural da Microsoft (edge-tts, pt-BR natural, cache local) e, sem internet, espeak-ng offline — o som funciona em qualquer cenário;
-* Instalação 100% offline (dependências Python embarcadas no pacote);
-* Backend instalado em `/opt/apoiofala`; dados de cada usuário em `~/.local/share/apoiofala`;
-* Atalho no menu de aplicativos com ícone próprio.
-
-**Gerar o pacote (na máquina de build, com npm e dpkg-deb instalados):**
-
-```bash
-./desktop/build_deb.sh
-# Saída: dist/apoiofala_0.1.0_amd64.deb
-```
-
-**Instalar no Ubuntu:**
-
-```bash
-sudo dpkg -i dist/apoiofala_0.1.0_amd64.deb
-sudo apt install -f   # garante dependências apt (speech-dispatcher, espeak-ng, etc.)
-```
-
-> Se você instalou uma versão anterior com o nome `caa-lab`, remova-a antes:
-> `sudo apt remove caa-lab`
-
-Depois é só procurar **ApoioFala** no menu de aplicativos ou executar `apoiofala` no terminal. Para desinstalar: `sudo apt remove apoiofala` (os dados dos usuários em `~/.local/share/apoiofala` são preservados).
-
----
-
 ## 🧪 Catálogo de Testes Automatizados
 
-A aplicação conta com **28 testes automatizados** cobrindo autenticação, integridade do banco, categorias, personalização de pranchas por drag-and-drop, métricas e rotas web.
+A aplicação conta com **38 testes automatizados** cobrindo autenticação, integridade do banco, categorias, personalização de pranchas por drag-and-drop, métricas, síntese de voz (offline, cache e circuit breaker) e rotas web.
 
 Para executar todos os testes:
 

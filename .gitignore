@@ -51,8 +51,6 @@ htmlcov/
 .tox/
 .nox/
 
-# Node.js (shell desktop Electron)
-node_modules/
 
 # IDEs e editores
 .idea/
