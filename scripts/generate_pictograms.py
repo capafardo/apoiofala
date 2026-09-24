@@ -578,7 +578,11 @@ PICTOGRAMS = {
 
 
 def ensure_pictograms(base_dir: Path = None):
-    """Cria os arquivos SVG nas pastas static e assets."""
+    """Garante a presença dos arquivos SVG nas pastas static e assets.
+
+    Escreve apenas pictogramas ausentes e tolera diretórios somente leitura
+    (ex.: instalação empacotada em /opt), onde os SVGs já são embarcados.
+    """
     if base_dir is None:
         base_dir = Path(__file__).resolve().parent.parent
 
@@ -588,11 +592,15 @@ def ensure_pictograms(base_dir: Path = None):
     ]
 
     for t_dir in target_dirs:
-        os.makedirs(t_dir, exist_ok=True)
-        for filename, svg_content in PICTOGRAMS.items():
-            file_path = t_dir / filename
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(svg_content.strip())
+        try:
+            t_dir.mkdir(parents=True, exist_ok=True)
+            for filename, svg_content in PICTOGRAMS.items():
+                file_path = t_dir / filename
+                if not file_path.exists():
+                    file_path.write_text(svg_content.strip(), encoding="utf-8")
+        except OSError:
+            # Diretório não gravável (instalação em /opt) — SVGs já embarcados
+            continue
 
 
 if __name__ == "__main__":

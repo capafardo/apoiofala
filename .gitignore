@@ -39,12 +39,18 @@ data/*
 assets/uploads/*
 !assets/uploads/.gitkeep
 
+# Cache de áudio TTS gerado em runtime
+assets/audio/tts-cache/
+
 # Testes e cobertura
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .nox/
+
+# Node.js (shell desktop Electron)
+node_modules/
 
 # IDEs e editores
 .idea/
@@ -56,3 +62,4 @@ htmlcov/
 # Sistema Operacional
 .DS_Store
 Thumbs.db
+*.pid

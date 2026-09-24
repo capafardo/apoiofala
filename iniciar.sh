@@ -32,27 +32,60 @@ APP_URL="http://localhost:${PORT}"
 echo "[INFO] Verificando diretórios locais de persistência..."
 mkdir -p data assets/pictograms assets/audio assets/uploads app/static/pictograms
 
-# 3. Gerar SVGs caso não existam
-if [ -f .venv/bin/python ]; then
-    .venv/bin/python scripts/generate_pictograms.py || true
-elif command -v python3 >/dev/null 2>&1; then
-    python3 scripts/generate_pictograms.py || true
-fi
+PID_FILE="${PROJECT_DIR}/.caa-lab.pid"
 
-# 4. Verificar se Docker e Docker Compose estão disponíveis
-HAS_DOCKER=false
-if command -v docker >/dev/null 2>&1; then
-    HAS_DOCKER=true
-fi
-
-# Modo Docker
-if [ "$HAS_DOCKER" = true ]; then
-    echo "[INFO] Docker detectado. Subindo containers via Docker Compose..."
-    if docker compose version >/dev/null 2>&1; then
-        docker compose up -d --build
-    elif command -v docker-compose >/dev/null 2>&1; then
-        docker-compose up -d --build
+# 3. Preparar ambiente virtual Python local (sem Docker)
+echo "[INFO] Verificando ambiente virtual Python local..."
+if [ ! -d .venv ]; then
+    echo "[INFO] Ambiente virtual .venv não encontrado. Criando..."
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "[ERRO] python3 não está instalado no sistema."
+        exit 1
     fi
+    python3 -m venv .venv
+    echo "[INFO] Instalando dependências a partir de requirements.txt..."
+    .venv/bin/pip install --upgrade pip
+    .venv/bin/pip install -r requirements.txt
+fi
+
+if [ ! -f .venv/bin/uvicorn ]; then
+    echo "[INFO] Uvicorn não encontrado no .venv. Instalando dependências..."
+    .venv/bin/pip install -r requirements.txt
+fi
+
+# 4. Gerar pictogramas offline caso não existam
+echo "[INFO] Verificando pictogramas..."
+.venv/bin/python scripts/generate_pictograms.py || true
+
+# 5. Garantir que nenhum container Docker do projeto esteja ativo ou seja iniciado
+if command -v docker >/dev/null 2>&1; then
+    if docker compose version >/dev/null 2>&1; then
+        docker compose down --remove-orphans >/dev/null 2>&1 || true
+    elif command -v docker-compose >/dev/null 2>&1; then
+        docker-compose down --remove-orphans >/dev/null 2>&1 || true
+    fi
+    docker stop caa-lab-app >/dev/null 2>&1 || true
+    docker rm caa-lab-app >/dev/null 2>&1 || true
+fi
+
+# 6. Iniciar servidor Uvicorn nativo (fora de qualquer container)
+if curl -s -f "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+    echo "[INFO] CAA-Lab já está em execução e respondendo em: ${APP_URL}"
+else
+    # Limpar processo anterior caso PID registrado esteja inativo
+    if [ -f "$PID_FILE" ]; then
+        OLD_PID=$(cat "$PID_FILE" 2>/dev/null || true)
+        if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+            kill "$OLD_PID" 2>/dev/null || true
+            sleep 1
+        fi
+        rm -f "$PID_FILE"
+    fi
+
+    echo "[INFO] Iniciando servidor Uvicorn nativo na porta ${PORT}..."
+    setsid .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port "${PORT}" </dev/null > /tmp/caa-lab.log 2>&1 &
+    APP_PID=$!
+    echo "$APP_PID" > "$PID_FILE"
 
     echo "[INFO] Aguardando inicialização e validação de saúde do serviço..."
     MAX_ATTEMPTS=20
@@ -69,25 +102,13 @@ if [ "$HAS_DOCKER" = true ]; then
     done
 
     if [ "$HEALTHY" = true ]; then
-        echo "[SUCESSO] CAA-Lab está pronto e operacional em: ${APP_URL}"
+        echo "[SUCESSO] CAA-Lab está pronto e operacional em: ${APP_URL} (PID: ${APP_PID})"
     else
-        echo "[AVISO] Não foi possível validar o healthcheck no tempo previsto. Verifique com 'docker compose logs'."
+        echo "[AVISO] Não foi possível validar o healthcheck no tempo previsto. Verifique os logs em /tmp/caa-lab.log."
     fi
-
-# Modo Fallback Local (caso Docker não esteja em execução)
-else
-    echo "[INFO] Docker não detectado ou inativo. Iniciando via ambiente Python local..."
-    if [ ! -d .venv ]; then
-        echo "[INFO] Criando ambiente virtual .venv..."
-        python3 -m venv .venv
-        .venv/bin/pip install -r requirements.txt
-    fi
-    echo "[INFO] Iniciando servidor Uvicorn em background..."
-    nohup .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port "${PORT}" > /tmp/caa-lab.log 2>&1 &
-    sleep 2
 fi
 
-# 5. Abrir a aplicação no navegador padrão
+# 7. Abrir a aplicação no navegador padrão
 echo "[INFO] Abrindo o CAA-Lab no navegador padrão..."
 if command -v xdg-open >/dev/null 2>&1; then
     xdg-open "${APP_URL}" >/dev/null 2>&1 &
@@ -96,7 +117,9 @@ elif command -v sensible-browser >/dev/null 2>&1; then
 fi
 
 echo "=========================================================="
-echo " CAA-Lab em execução: ${APP_URL}"
+echo " CAA-Lab em execução local: ${APP_URL}"
 echo " Modo Criança: ${APP_URL}/"
 echo " Modo Profissional: ${APP_URL}/profissional"
+echo " Logs: /tmp/caa-lab.log"
+echo " Para encerrar: ./parar.sh"
 echo "=========================================================="

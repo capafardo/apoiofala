@@ -17,6 +17,7 @@
   - [Opção 1: Inicialização Automática no Ubuntu Linux](#opção-1-inicialização-automática-no-ubuntu-linux-recomendado)
   - [Opção 2: Com Docker Compose](#opção-2-com-docker-compose)
   - [Opção 3: Ambiente de Desenvolvimento Local (Python)](#opção-3-ambiente-de-desenvolvimento-local-python)
+  - [Opção 4: Aplicativo Desktop (.deb) — ApoioFala](#opção-4-aplicativo-desktop-deb--apoiofala)
 - [Catálogo de Testes Automatizados](#-catálogo-de-testes-automatizados)
 - [Conformidade com a LGPD e Segurança](#-conformidade-com-a-lgpd-e-segurança)
 - [Documentação Técnica Completa](#-documentação-técnica-completa)
@@ -41,7 +42,7 @@ O **CAA-Lab** é uma aplicação web local de apoio à **Comunicação Aumentati
 * **Navegação Intuitiva por Categorias:** Categorias temáticas (*Início, Comunicar, Frases rápidas, Sentimentos, Necessidades, Comida e bebida, Pessoas, Lugares, Brincar, Mais*).
 * **Biblioteca Vetorial com mais de 80 Símbolos SVG:** Imagens nítidas e coloridas com rótulos em texto de fácil leitura.
 * **Construtor de Mensagens ("Minha Mensagem"):** Montagem sequencial de frases (`[eu] + [quero] + [água]`), exibição em texto natural formatado (*"Eu quero água."*) e remoção de itens individuais com 1 clique.
-* **Síntese de Voz Integrada (TTS Local):** Reprodução instantânea por voz em português (pt-BR) com velocidade configurável.
+* **Síntese de Voz Integrada (TTS):** Reprodução instantânea com **voz neural da Microsoft** (pt-BR, gratuita via edge-tts, sem chave de API) e velocidade configurável; fallback offline garantido.
 * **Frases Rápidas:** Acesso a pedidos e expressões frequentes com reprodução sonora imediata em 1 toque.
 * **Seletor de Perfil na Barra Superior:** Permite alternar instantaneamente entre perfis cadastrados, carregando a prancha e preferências de cada criança.
 * **Acessibilidade Rápida:** Botões *A-* e *A+* para ajuste dinâmico do tamanho dos cartões e botão de alternância para *Alto Contraste*.
@@ -64,7 +65,7 @@ O **CAA-Lab** é uma aplicação web local de apoio à **Comunicação Aumentati
 * **Backend:** Python 3.11+ com **FastAPI**, **SQLAlchemy 2.0** e **Pydantic v2**.
 * **Banco de Dados:** SQLite com modo WAL (*Write-Ahead Logging*) e integridade relacional de chaves estrangeiras ativada.
 * **Frontend:** HTML5 Semântico, CSS3 Moderno com variáveis nativas para Alto Contraste e JavaScript Modular (ES Modules) nativo sem necessidade de compilação em runtime.
-* **Síntese de Voz (TTS):** Abstração `SpeechService` com provedor cliente via Web Speech API (zero latência e suporte nativo a pt-BR).
+* **Síntese de Voz (TTS):** Abstração `SpeechService` com provedor cliente via Web Speech API (zero latência) e backend com **voz neural Microsoft (edge-tts, gratuita)** com cache em disco e fallback espeak-ng offline.
 * **Containerização:** Docker e Docker Compose com volumes de dados persistentes.
 
 ---
@@ -83,6 +84,11 @@ apoio-fala/
 │   └── templates/           # Templates HTML (index.html, profissional.html)
 ├── assets/                  # Volumes persistentes de pictogramas e áudio
 ├── data/                    # Volume do banco de dados SQLite persistente
+├── desktop/                 # Versão desktop (.deb): shell Electron + empacotamento
+│   ├── electron/            #   Shell Electron (janela própria, backend embutido)
+│   ├── deb/                 #   Arquivos do pacote (control, postinst, ícone, .desktop)
+│   └── build_deb.sh         #   Script de build do pacote .deb
+├── dist/                    # Pacote .deb gerado (ignorado pelo git)
 ├── docs/                    # Documentação técnica detalhada
 ├── scripts/                 # Scripts auxiliares (geração de SVGs offline)
 ├── tests/                   # Testes automatizados (Unitários e Integração)
@@ -96,13 +102,16 @@ apoio-fala/
 
 ## 💻 Como Executar a Aplicação
 
-### Opção 1: Inicialização Automática no Ubuntu Linux (Recomendado)
+### Opção 1: Inicialização Automática no Ubuntu Linux (Recomendado — Sem Docker)
 
-O script `iniciar.sh` detecta o ambiente, configura o arquivo `.env`, valida dependências, sobe o serviço e abre o navegador automaticamente via `xdg-open`:
+O script `iniciar.sh` prepara o ambiente virtual Python local, configura o `.env`, valida dependências, sobe o serviço nativamente no host (sem usar Docker) e abre o navegador automaticamente via `xdg-open`:
 
 ```bash
-chmod +x iniciar.sh
+chmod +x iniciar.sh parar.sh
 ./iniciar.sh
+
+# Para encerrar o serviço:
+./parar.sh
 ```
 
 ---
@@ -139,6 +148,39 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
+### Opção 4: Aplicativo Desktop (.deb) — ApoioFala
+
+Uma versão **desktop instalável** (`.deb`) chamada **ApoioFala**, que abre a prancha em **janela própria** (sem navegador), com o backend FastAPI embutido e dados persistentes **por usuário** em `~/.local/share/apoiofala/`.
+
+**Características:**
+* Janela nativa (Electron/Chromium) sem barra de endereço nem abas — ideal para uso por crianças;
+* `F11` alterna tela cheia; modo quiosque via `CAA_KIOSK=1` (sair com `Ctrl+Shift+X`);
+* Síntese de voz robusta: Web Speech API (latência zero) com **fallback automático para o backend** — voz neural da Microsoft (edge-tts, pt-BR natural, cache local) e, sem internet, espeak-ng offline — o som funciona em qualquer cenário;
+* Instalação 100% offline (dependências Python embarcadas no pacote);
+* Backend instalado em `/opt/apoiofala`; dados de cada usuário em `~/.local/share/apoiofala`;
+* Atalho no menu de aplicativos com ícone próprio.
+
+**Gerar o pacote (na máquina de build, com npm e dpkg-deb instalados):**
+
+```bash
+./desktop/build_deb.sh
+# Saída: dist/apoiofala_0.1.0_amd64.deb
+```
+
+**Instalar no Ubuntu:**
+
+```bash
+sudo dpkg -i dist/apoiofala_0.1.0_amd64.deb
+sudo apt install -f   # garante dependências apt (speech-dispatcher, espeak-ng, etc.)
+```
+
+> Se você instalou uma versão anterior com o nome `caa-lab`, remova-a antes:
+> `sudo apt remove caa-lab`
+
+Depois é só procurar **ApoioFala** no menu de aplicativos ou executar `apoiofala` no terminal. Para desinstalar: `sudo apt remove apoiofala` (os dados dos usuários em `~/.local/share/apoiofala` são preservados).
+
+---
+
 ## 🧪 Catálogo de Testes Automatizados
 
 A aplicação conta com **28 testes automatizados** cobrindo autenticação, integridade do banco, categorias, personalização de pranchas por drag-and-drop, métricas e rotas web.
@@ -154,6 +196,7 @@ Para executar todos os testes:
 ## 🛡️ Conformidade com a LGPD e Segurança
 
 * **Armazenamento 100% Local:** Nenhum dado sai da rede interna da instituição.
+* **Nota sobre TTS neural:** para voz natural (Microsoft/edge-tts) o texto é enviado ao serviço gratuito da Microsoft; em ambientes **sem internet**, defina `TTS_ENGINE=espeak` (ou `engine=espeak` na requisição) para manter o áudio 100% local.
 * **Criptografia Forte:** Senhas armazenadas com hash `bcrypt` (fator de custo 12).
 * **Minimização de Dados:** Mensagens privadas da criança não são salvas em bancos de logs ou telemetria.
 * **Segurança HTTP:** Headers de segurança configurados nativamente (`X-Frame-Options`, `X-Content-Type-Options`, etc.).

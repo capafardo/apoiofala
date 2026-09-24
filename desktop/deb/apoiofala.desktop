@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ApoioFala
+GenericName=Comunicação Aumentativa e Alternativa
+Comment=Aplicativo de Comunicação Aumentativa e Alternativa (CAA)
+Exec=/usr/bin/apoiofala
+Icon=apoiofala
+Terminal=false
+Categories=Education;Utility;Accessibility;
+Keywords=comunicacao;acessibilidade;prancha;criancas;TEA;
+StartupNotify=true
+StartupWMClass=apoiofala

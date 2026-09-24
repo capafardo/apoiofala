@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# ApoioFala — Launcher do aplicativo desktop
+# Executa o shell Electron apontando para o app empacotado em /opt/apoiofala.
+# ==============================================================================
+exec /opt/apoiofala/electron/apoiofala /opt/apoiofala/electron "$@"

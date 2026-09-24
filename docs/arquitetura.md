@@ -43,7 +43,7 @@ O **CAA-Lab** foi projetado para operar com autonomia máxima em rede local fech
 ### B. Backend (FastAPI / Python 3.11+)
 - **Estrutura Assíncrona:** Alta performance e baixo consumo de memória.
 - **Tipagem Estrita com Pydantic v2:** Validação robusta de todos os payloads de entrada e saída.
-- **Abstração de TTS (`SpeechService`):** Desacopla o mecanismo de síntese, permitindo plugar futuramente provedores locais adicionais (ex: Piper/eSpeak).
+- **Abstração de TTS (`SpeechService`):** Desacopla o mecanismo de síntese. No backend, a rota `/speech/tts` usa voz neural da Microsoft (edge-tts, gratuita) com cache em disco e fallback espeak-ng 100% offline.
 
 ### C. Persistência de Dados
 - **SQLite 3 Local com WAL:** Garante alta concorrência de leitura e escrita sem corrupção.

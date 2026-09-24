@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: caa-lab-app
-    restart: unless-stopped
+    restart: "no"
     ports:
       - "${PORT:-8000}:8000"
     environment:
