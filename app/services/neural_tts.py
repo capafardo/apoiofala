@@ -140,6 +140,12 @@ def synthesize(text: str, language: str = "pt-BR", speed: float = 1.0) -> Tuple[
     cache_file = _cache_path(text, voice, rate)
 
     # 1. Cache em disco: resposta instantânea sem rede
+    if not (cache_file.is_file() and cache_file.stat().st_size > 0):
+        # Fallback para áudio na velocidade padrão (+0%) já pré-aquecido no cache
+        default_cache = _cache_path(text, voice, "+0%")
+        if default_cache.is_file() and default_cache.stat().st_size > 0:
+            cache_file = default_cache
+
     if cache_file.is_file() and cache_file.stat().st_size > 0:
         return cache_file.read_bytes(), "audio/mpeg", "edge-neural"
 

@@ -103,30 +103,28 @@ class SpeechController {
   }
 
   _speakBackend(text) {
-    if (!this.audioEl) {
-      this.audioEl = new Audio();
-      this.audioEl.preload = 'auto';
-    }
-    const el = this.audioEl;
-
     return this._getAudioUrl(this._backendUrl(text)).then(
       (blobUrl) =>
         new Promise((resolve, reject) => {
+          const audio = new Audio(blobUrl);
+          audio.playbackRate = this.rate;
+
           const cleanup = () => {
-            el.onended = null;
-            el.onerror = null;
+            audio.onended = null;
+            audio.onerror = null;
           };
-          el.onended = () => {
+
+          audio.onended = () => {
             cleanup();
             resolve();
           };
-          el.onerror = () => {
+
+          audio.onerror = () => {
             cleanup();
             reject(new Error("Falha ao decodificar/reproduzir áudio do backend"));
           };
-          if (el.src !== blobUrl) el.src = blobUrl;
-          el.currentTime = 0; // permite repetir a mesma frase
-          const playPromise = el.play();
+
+          const playPromise = audio.play();
           if (playPromise && typeof playPromise.catch === "function") {
             playPromise.catch((err) => {
               cleanup();
